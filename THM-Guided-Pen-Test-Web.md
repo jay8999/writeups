@@ -44,6 +44,6 @@ Secure File Upload Validation:
 
 Disregard client-side restrictions (accept attributes) as a security control, treating them strictly as user-experience enhancements.
 
-        Implement strict server-side allowlists based on approved file extensions and MIME types rather than blocklists.
+Implement strict server-side allowlists based on approved file extensions and MIME types rather than blocklists.
 
-        Store uploaded files outside of the web root or configure the web server to disable script execution within upload directories.
+Store uploaded files outside of the web root or configure the web server to disable script execution within upload directories.
