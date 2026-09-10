@@ -4,7 +4,7 @@
 
 The engagement began with systematic network and application enumeration to map the attack surface of the RecruitX platform.
 
-Network Scanning & Port Discovery
+# Network Scanning & Port Discovery
 
 An initial comprehensive TCP port scan was executed using Nmap to identify open ports, running services, and potential entry points on the target (MACHINE_IP):
 
@@ -20,7 +20,7 @@ Key Findings:
 
     Port 8080 (HTTP): Secondary Apache instance serving a default status/test page.
 
-Application Fingerprinting & Tech Stack
+# Application Fingerprinting & Tech Stack
 
 To determine the application framework and headers, a manual HTTP header inspection was performed:
 
@@ -32,7 +32,7 @@ curl -I http://MACHINE_IP
 
     Technology Stack Confirmed: Classic LAMP stack (Linux, Apache, MySQL, PHP).
 
-Directory & Endpoint Enumeration
+# Directory & Endpoint Enumeration
 
 Using Gobuster alongside a common wordlist and PHP extension filters, hidden directories and files were mapped across the web root:
 Bash
@@ -51,7 +51,7 @@ High-Value Discoveries:
 
     /profile.php & /dashboard.php: Authenticated user areas requiring session context.
 
-API Surface Discovery
+# API Surface Discovery
 
 Querying the unauthenticated /api/ endpoint revealed internal route maps, exposing structural layout information prematurely:
 
@@ -62,7 +62,7 @@ Querying the unauthenticated /api/ endpoint revealed internal route maps, exposi
 
 Gaining remote code execution on the underlying server required chaining multiple low-to-medium severity vulnerabilities together, moving systematically from an unauthenticated posture to full administrative compromise.
 
-Phase 1: Insecure Direct Object Reference (IDOR)
+# Phase 1: Insecure Direct Object Reference (IDOR)
 
 While authenticated as a standard test user (testuser@fake.thm), navigating to the user profile revealed a predictable numeric parameter in the URL:
 
@@ -75,7 +75,7 @@ By modifying the id parameter from 6 to 1, the application exposed unauthorized 
 
 Enumerating IDs 1 through 5 successfully leaked the roles, names, and emails of all internal users, identifying Sarah Mitchell as the primary system administrator (s.mitchell@recruitx.thm).
 
-Phase 2: Flawed Password Reset & Account Takeover
+# Phase 2: Flawed Password Reset & Account Takeover
 
 Instead of attempting brute-force attacks on the admin login, the password reset workflow at /reset.php was evaluated.
 
@@ -85,7 +85,7 @@ Instead of attempting brute-force attacks on the admin login, the password reset
 
     Execution: By submitting Sarah Mitchell’s email (s.mitchell@recruitx.thm), the admin reset token was instantly disclosed. This token was immediately used to overwrite her password via the reset interface, resulting in a direct account takeover.
 
-Phase 3: Admin Panel Access & File Upload Bypass
+# Phase 3: Admin Panel Access & File Upload Bypass
 
 With valid administrator credentials, access was granted to the previously hidden administrative dashboard at /admin, which housed a file management and upload utility at /admin/upload.php.
 
@@ -97,7 +97,7 @@ With valid administrator credentials, access was granted to the previously hidde
 
         Verification: Navigating to http://MACHINE_IP/uploads/documents/test.phtml confirmed that Apache processed the file as active code rather than static text.
 
-Phase 4: Web Shell Deployment & Remote Code Execution (RCE)
+# Phase 4: Web Shell Deployment & Remote Code Execution (RCE)
 
 To interact with the server dynamically, a custom web shell (shell.phtml) was uploaded:
 
@@ -112,7 +112,7 @@ Executing system-level commands through HTTP GET requests confirmed low-privileg
     curl "http://MACHINE_IP/uploads/documents/shell.phtml?cmd=id"
     # Output: uid=33(www-data) gid=33(www-data) groups=33(www-data)
 
-Phase 5: Upgrading to an Interactive Reverse Shell
+# Phase 5: Upgrading to an Interactive Reverse Shell
 
 To overcome the limitations of single-command HTTP execution, a Netcat listener was established on the attack machine:
 
@@ -133,7 +133,7 @@ This established an interactive www-data shell on the host, allowing internal en
 | **Flawed Password Reset Mechanism** | Critical | Exposed tokens in HTTP responses, allowing direct administrator account takeover. |
 | **Incomplete File Extension Blocklist** | Critical | Permitted `.phtml` uploads, leading to arbitrary code execution. |
 
-To secure the application, the engineering team must implement the following controls:
+# To secure the application, the engineering team must implement the following controls:
 
 Robust Access Control (IDOR Mitigation): Implement strict, server-side session-based authorization checks for all user profiles and API routes to ensure users can only access explicitly permitted data.
 
@@ -143,7 +143,7 @@ Secure File Upload Validation: Treat client-side restrictions (accept attributes
 
 API Hardening: Restrict internal API endpoints to authenticated administrative roles and remove unauthenticated index discovery paths.
 
-Key Takeaways & Lessons Learned
+# Key Takeaways & Lessons Learned
 
 Enumeration is Foundation: Comprehensive pre-exploitation mapping of technology stacks, headers, and endpoints drives successful assessments.
 
