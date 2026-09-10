@@ -135,18 +135,18 @@ This established an interactive www-data shell on the host, allowing internal en
 
 To secure the application, the engineering team must implement the following controls:
 
-    Robust Access Control (IDOR Mitigation): Implement strict, server-side session-based authorization checks for all user profiles and API routes to ensure users can only access explicitly permitted data.
+Robust Access Control (IDOR Mitigation): Implement strict, server-side session-based authorization checks for all user profiles and API routes to ensure users can only access explicitly permitted data.
 
-    Secure Password Reset Implementation: Never expose password reset tokens in HTTP response bodies or client interfaces. Use cryptographically secure, randomly generated tokens delivered exclusively via out-of-band channels (verified user email addresses) alongside       proper rate limiting.
+Secure Password Reset Implementation: Never expose password reset tokens in HTTP response bodies or client interfaces. Use cryptographically secure, randomly generated tokens delivered exclusively via out-of-band channels (verified user email addresses) alongside       proper rate limiting.
 
-    Secure File Upload Validation: Treat client-side restrictions (accept attributes) purely as user-experience enhancements. Implement strict server-side allowlists for approved file extensions and MIME types rather than blocklists, and configure the web server to         disable script execution within upload directories.
+Secure File Upload Validation: Treat client-side restrictions (accept attributes) purely as user-experience enhancements. Implement strict server-side allowlists for approved file extensions and MIME types rather than blocklists, and configure the web server to         disable script execution within upload directories.
 
-    API Hardening: Restrict internal API endpoints to authenticated administrative roles and remove unauthenticated index discovery paths.
+API Hardening: Restrict internal API endpoints to authenticated administrative roles and remove unauthenticated index discovery paths.
 
 Key Takeaways & Lessons Learned
 
-    Enumeration is Foundation: Comprehensive pre-exploitation mapping of technology stacks, headers, and endpoints drives successful assessments.
+Enumeration is Foundation: Comprehensive pre-exploitation mapping of technology stacks, headers, and endpoints drives successful assessments.
 
-    Small Flaws Compound: Standalone moderate bugs (IDOR, weak password resets) escalate drastically when chained together.
+Small Flaws Compound: Standalone moderate bugs (IDOR, weak password resets) escalate drastically when chained together.
 
-    Never Trust Client-Side Controls: Browser-level validation and flawed server-side blocklists are easily bypassed; secure applications rely strictly on robust server-side allowlisting.
+Never Trust Client-Side Controls: Browser-level validation and flawed server-side blocklists are easily bypassed; secure applications rely strictly on robust server-side allowlisting.
