@@ -2,7 +2,7 @@
 
 # 1. Reconnaissance & Enumeration
 
-Executive Summary & Scope
+# Executive Summary & Scope
 
 An assessment was conducted focusing on web application authentication mechanisms, session handling, password recovery workflows, and legacy login portals (such as HTTP Basic Authentication and predictable token schemes). The objective was to identify weak implementation patterns, leverage verbose error responses for user enumeration, and evaluate the resiliency of authentication endpoints against automated brute-force attacks and token prediction.
 
@@ -14,13 +14,15 @@ The engagement began with mapping the authentication attack surface, analyzing h
 
   Endpoint Discovery: Systematically identified open ports and web applications hosting credential submission forms, API functions, and authentication gates.
 
-Historical OSINT & Wayback Discovery
+# Historical OSINT & Wayback Discovery
 
 Before launching active scans, passive enumeration techniques were utilized to unearth hidden directories or forgotten administrative paths:
 
   Wayback URLs: Utilizing tools like waybackurls to query the Internet Archive's Wayback Machine helped extract historical endpoints and legacy files that might still linger on production servers.
 
-  Google Dorking: Crafted specific advanced search operators to uncover exposed administrative directories, open log files, or directory indexes:
+# Google Dorking: 
+
+Crafted specific advanced search operators to uncover exposed administrative directories, open log files, or directory indexes:
 
   Admin Panels: site:example.com inurl:admin
 
@@ -95,7 +97,9 @@ Leveraging enumeration insights, active exploitation was performed against passw
 
 At [http://enum.thm/labs/predictable_tokens/](http://enum.thm/labs/predictable_tokens/), password reset requests generated weak tokens using a predictable random range (mt_rand(100, 200)), yielding a 3-digit numeric keyspace.
 
-Wordlist Generation: Used crunch to generate a precise numeric keyspace dictionary:
+# Wordlist Generation: 
+
+Used crunch to generate a precise numeric keyspace dictionary:
 
     crunch 3 3 -o otp.txt -t %%% -s 100 -e 200
   
