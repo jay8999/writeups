@@ -103,9 +103,11 @@ Used crunch to generate a precise numeric keyspace dictionary:
 
     crunch 3 3 -o otp.txt -t %%% -s 100 -e 200
   
+<img width="1934" height="768" alt="image" src="https://github.com/user-attachments/assets/76f84900-51ef-4dbd-9e5b-2553d8b86941" />
+
 Burp Suite Intruder Execution: Captured the password reset validation URL (?token=123), fed the generated otp.txt wordlist into Burp Intruder, and isolated the successful token via anomalous content-length responses to successfully reset the administrator's password.
 
-<img width="1934" height="768" alt="image" src="https://github.com/user-attachments/assets/76f84900-51ef-4dbd-9e5b-2553d8b86941" />
+<img width="2988" height="866" alt="image" src="https://github.com/user-attachments/assets/672569b3-5814-4250-ab8c-cf1a7fcd9b6f" />
 
 # Phase 2: HTTP Basic Authentication Brute-Forcing
 
