@@ -1,6 +1,6 @@
 # Guided Pentest: Web - Lab Notes & Writeup
 
-# Reconnaissance & Enumeration
+# 1. Reconnaissance & Enumeration
 
 The engagement began with systematic network and application enumeration to map the attack surface of the RecruitX platform.
 
@@ -58,7 +58,7 @@ Querying the unauthenticated /api/ endpoint revealed internal route maps, exposi
     curl http://MACHINE_IP/api/
     # Output: {"endpoints":["\/api\/user","\/api\/jobs","\/api\/applications"]}
 
-# Exploitation
+# 2. Exploitation
 
 Gaining remote code execution on the underlying server required chaining multiple low-to-medium severity vulnerabilities together, moving systematically from an unauthenticated posture to full administrative compromise.
 
@@ -124,18 +124,29 @@ The web shell was then leveraged to trigger a reverse shell back to the listener
 
 This established an interactive www-data shell on the host, allowing internal enumeration (such as reading /etc/passwd) and successful retrieval of the validation flag from /var/www/flag.txt.
 
-# Remediation
+# 3. Remediation
 
-To secure the application and patch the discovered chain of vulnerabilities, the following engineering and configuration changes must be implemented:
+| Vulnerability | Severity | Impact in Chain |
+| :--- | :--- | :--- |
+| **API Endpoint Disclosure** | Medium | Exposed internal route structures to unauthenticated users. |
+| **IDOR on User Profiles & API** | High | Leaked internal user records, identifying the system administrator's email. |
+| **Flawed Password Reset Mechanism** | Critical | Exposed tokens in HTTP responses, allowing direct administrator account takeover. |
+| **Incomplete File Extension Blocklist** | Critical | Permitted `.phtml` uploads, leading to arbitrary code execution. |
 
-Robust Access Control (IDOR Mitigation): Implement strict, server-side session-based authorization checks for all user-specific endpoints to ensure users can only access data and objects they are explicitly permitted to view.
+To secure the application, the engineering team must implement the following controls:
 
-Secure Password Reset Implementation: Never expose password reset tokens in HTTP response bodies or client-side scripts. Utilize cryptographically secure, randomly generated tokens that expire quickly, and deliver them strictly through out-of-band channels (such as verified user email addresses).
+    Robust Access Control (IDOR Mitigation): Implement strict, server-side session-based authorization checks for all user profiles and API routes to ensure users can only access explicitly permitted data.
 
-Secure File Upload Validation:
+    Secure Password Reset Implementation: Never expose password reset tokens in HTTP response bodies or client interfaces. Use cryptographically secure, randomly generated tokens delivered exclusively via out-of-band channels (verified user email addresses) alongside       proper rate limiting.
 
-Disregard client-side restrictions (accept attributes) as a security control, treating them strictly as user-experience enhancements.
+    Secure File Upload Validation: Treat client-side restrictions (accept attributes) purely as user-experience enhancements. Implement strict server-side allowlists for approved file extensions and MIME types rather than blocklists, and configure the web server to         disable script execution within upload directories.
 
-Implement strict server-side allowlists based on approved file extensions and MIME types rather than blocklists.
+    API Hardening: Restrict internal API endpoints to authenticated administrative roles and remove unauthenticated index discovery paths.
 
-Store uploaded files outside of the web root or configure the web server to disable script execution within upload directories.
+Key Takeaways & Lessons Learned
+
+    Enumeration is Foundation: Comprehensive pre-exploitation mapping of technology stacks, headers, and endpoints drives successful assessments.
+
+    Small Flaws Compound: Standalone moderate bugs (IDOR, weak password resets) escalate drastically when chained together.
+
+    Never Trust Client-Side Controls: Browser-level validation and flawed server-side blocklists are easily bypassed; secure applications rely strictly on robust server-side allowlisting.
