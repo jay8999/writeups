@@ -2,19 +2,63 @@
 
 # Reconnaissance & Enumeration
 
-The engagement began with systematic network and application enumeration to map the attack surface.
+1. Reconnaissance & Enumeration
 
-Network Scanning: Executed an initial Nmap scan against the target to identify open ports, running services, and potential entry points.
+The engagement began with systematic network and application enumeration to map the attack surface of the RecruitX platform.
 
-Application Mapping: Mapped the web application's structure, endpoints, headers, and overall behavior before attempting any exploitation. This phase focused on identifying interactive features, such as user profile endpoints, password reset functionalities, and file upload forms.
+Network Scanning & Port Discovery
 
-Attack Surface Identification: Pinpointed high-risk functional areas:
+An initial comprehensive TCP port scan was executed using Nmap to identify open ports, running services, and potential entry points on the target (MACHINE_IP):
 
-User management endpoints vulnerable to object reference manipulation.
+    nmap -sV -sC -p- MACHINE_IP
 
-A password reset mechanism handling sensitive token generation.
+Key Findings:
 
-A file upload utility utilizing client-side restrictions and a weak server-side blocklist.
+    Port 22 (SSH): OpenSSH 9.6p1 (valuable for later system access if valid credentials are recovered).
+
+    Port 80 (HTTP): Apache httpd 2.4.58 running the main RecruitX web application (RecruitX — Home).
+
+    Port 3306 (MySQL): Database service, indicating backend data storage that is potentially vulnerable to injection or data handling flaws.
+
+    Port 8080 (HTTP): Secondary Apache instance serving a default status/test page.
+
+Application Fingerprinting & Tech Stack
+
+To determine the application framework and headers, a manual HTTP header inspection was performed:
+
+curl -I http://MACHINE_IP
+
+    Server Header: Apache/2.4.58 (Ubuntu)
+
+    Session Management: PHPSESSID cookie observed without the httponly flag set (noted as a secondary hardening issue).
+
+    Technology Stack Confirmed: Classic LAMP stack (Linux, Apache, MySQL, PHP).
+
+Directory & Endpoint Enumeration
+
+Using Gobuster alongside a common wordlist and PHP extension filters, hidden directories and files were mapped across the web root:
+Bash
+
+gobuster dir -u http://MACHINE_IP -w /usr/share/wordlists/dirbuster/directory-list-2.3-small.txt -x php
+
+High-Value Discoveries:
+
+    /admin: Administrative panel (redirects to login; target for privilege escalation).
+
+    /api: Internal API root containing unauthenticated structural hints.
+
+    /reset.php: Password reset workflow page.
+
+    /uploads: Target directory for user-submitted files.
+
+    /profile.php & /dashboard.php: Authenticated user areas requiring session context.
+
+API Surface Discovery
+
+Querying the unauthenticated /api/ endpoint revealed internal route maps, exposing structural layout information prematurely:
+
+    curl http://MACHINE_IP/api/
+    # Output: {"endpoints":["\/api\/user","\/api\/jobs","\/api\/applications"]}
 
 # Exploitation
 
