@@ -2,8 +2,6 @@
 
 # Reconnaissance & Enumeration
 
-1. Reconnaissance & Enumeration
-
 The engagement began with systematic network and application enumeration to map the attack surface of the RecruitX platform.
 
 Network Scanning & Port Discovery
