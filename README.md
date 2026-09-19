@@ -4,11 +4,11 @@ A personal collection of technical writeups, vulnerability analyses, and exploit
 
 # Directory Structure
 
-/Web-Exploitation - Walkthroughs focusing on OWASP Top 10 vulnerabilities, injection flaws, and client-side attacks.
+Web Exploitation Reports - Walkthroughs focusing on OWASP Top 10 vulnerabilities, injection flaws, and client-side attacks.
 
-/Privilege-Escalation - Notes and enumeration techniques for elevating local access on Linux and Windows systems.
+Writeups - Notes and enumeration techniques for elevating local access on Linux and Windows systems.
 
-/Network-Penetration - Full-box walkthroughs detailing initial enumeration, exploitation, and post-exploitation workflows.
+Guided Penetration Testing - Full-box walkthroughs detailing initial enumeration, exploitation, and post-exploitation workflows.
 
 # Featured Writeups
 
