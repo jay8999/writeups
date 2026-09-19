@@ -1,4 +1,7 @@
 # Vulnerability Writeup: SQL Injection (SQLi)
+
+Below is an example of how this vulnerability is often exploited and a proposal of a solution.
+
 # 1. Reconnaissance & Enumeration
 
   Discovery: During the web application mapping phase, the product search feature (/catalog/search?q=) was identified as a potential user-supplied input sink.
