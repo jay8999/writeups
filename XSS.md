@@ -1,5 +1,7 @@
 # Vulnerability Writeup: Cross-Site Scripting (XSS) - Stored
 
+Below is an example of how this vulnerability is often exploited and a proposal of a solution.
+
 # 1. Reconnaissance & Enumeration
 
   Discovery: During the application mapping phase, a user profile "Biography" section and a public comment board were identified as input vectors that store and display user-supplied data to other visitors.
