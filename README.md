@@ -6,8 +6,6 @@ A personal collection of technical writeups, vulnerability analyses, and exploit
 
 Web Exploitation Reports - Walkthroughs focusing on OWASP Top 10 vulnerabilities, injection flaws, and client-side attacks.
 
-Writeups - Notes and enumeration techniques for elevating local access on Linux and Windows systems.
-
 Guided Penetration Testing - Full-box walkthroughs detailing initial enumeration, exploitation, and post-exploitation workflows.
 
 # Featured Writeups
