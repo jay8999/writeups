@@ -28,7 +28,7 @@ File Upload Bypass: By using a double extension (shell.jpg.php) or bypassing wea
 
 Triggering Execution: Navigating to the uploaded file's web-accessible path allowed remote command execution:
 
-			http://target-ip/uploads/shell.php?cmd=whoami
+	http://target-ip/uploads/shell.php?cmd=whoami
 
 Session Stabilization: This execution path was leveraged to spawn an interactive reverse shell back to the listener, confirming full OS-level access.
 
