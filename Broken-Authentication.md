@@ -1,3 +1,5 @@
+# OWASP Top 10:2025 - A07 — Authentication Failures
+
 # 1. Reconnaissance & Enumeration
 During the initial assessment of the web application, the goal was to identify endpoints and mechanisms susceptible to authentication and session management failures.
 
